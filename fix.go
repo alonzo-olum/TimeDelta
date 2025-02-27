@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -14,11 +13,13 @@ func Fix(in []Point, start, end, interval uint32) []Point {
 	var result []Point = make([]Point, 0)
 	for _, i := range in {
 
-		index := shiftIndex(start, end, interval)
+		var index int
 		if start < i.Ts {
+			index = shiftIndex(start, i.Ts, interval)
 			result = append(result, shiftLeading(index, start, interval)...)
 		}
 		if start == i.Ts {
+			index = shiftIndex(start, end, interval)
 			result = append(result, shiftLagging(i, index, start, interval)...)
 		}
 		start += interval
