@@ -12,15 +12,17 @@ type Point struct {
 func Fix(in []Point, start, end, interval uint32) []Point {
 	var result []Point = make([]Point, 0)
 	for _, i := range in {
-
-		if start < i.Ts {
-			index := shiftIndex(start, i.Ts, interval)
-			result = append(result, shift(index, start, interval)...)
+		if start < end {
+			if start < i.Ts {
+				index := shiftIndex(start, i.Ts, interval)
+				result = append(result, shift(index, start, interval)...)
+			} else if start == i.Ts {
+				result = append(result, i)
+			} else {
+				continue
+			}
+			start += interval
 		}
-		if start == i.Ts {
-			result = append(result, i)
-		}
-		start += interval
 	}
 
 	index := shiftIndex(start, end, interval)
@@ -31,8 +33,10 @@ func Fix(in []Point, start, end, interval uint32) []Point {
 	return result
 }
 
-func shiftIndex(start, end, delta uint32) int {
-	return int((end - start) / delta)
+func shiftIndex(start, end, interval uint32) int {
+	delta := int(end) - int(start)
+	index := delta / int(interval)
+	return index
 }
 
 func shift(index int, start, delta uint32) []Point {
