@@ -14,18 +14,23 @@ func Fix(in []Point, start, end, interval uint32) []Point {
 	for _, i := range in {
 		if start < end {
 			if start < i.Ts {
-				index := shiftIndex(start, i.Ts, interval)
+				index := offset(start, i.Ts, interval)
 				result = append(result, shift(index, start, interval)...)
+				for index != 0 {
+					start += interval
+					index--
+				}
+
 			} else if start == i.Ts {
 				result = append(result, i)
+				start += interval
 			} else {
 				continue
 			}
-			start += interval
 		}
 	}
 
-	index := shiftIndex(start, end, interval)
+	index := offset(start, end, interval)
 	// are there missing points from last point to end
 	if index > 1 {
 		result = append(result, shift(index, start, interval)...)
@@ -33,20 +38,18 @@ func Fix(in []Point, start, end, interval uint32) []Point {
 	return result
 }
 
-func shiftIndex(start, end, interval uint32) int {
+func offset(start, end, interval uint32) int {
 	delta := int(end) - int(start)
-	index := delta / int(interval)
-	return index
+	return delta / int(interval)
 }
 
 func shift(index int, start, delta uint32) []Point {
 	var result = make([]Point, 0)
-	var offset = start
 
 	for idx := 0; idx < index; idx++ {
 		// create missing points
-		result = append(result, Point{Val: math.NaN(), Ts: offset})
-		offset += delta
+		result = append(result, Point{Val: math.NaN(), Ts: start})
+		start += delta
 	}
 	return result
 }
